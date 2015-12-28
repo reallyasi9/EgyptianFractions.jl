@@ -4,9 +4,13 @@ module EgyptianFractions
 
 export efgreedy, efoddgreedy, efharmonic, efengel
 
-function _prep{T<:Integer}(r::Rational{T})
+function _prep{T<:Integer}(r::Rational{T}, given::Array{T,1})
+  s = sum(1 .// given)
+  @assert s ≤ r
   rem = abs(BigInt(num(r))//BigInt(den(r)))
+  rem -= s
   ef = BigInt[]
+  append!(ef, given)
   if abs(rem) ≥ 1
     f = floor(rem)
     rem -= f
@@ -30,8 +34,8 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 
 is always true.
 """
-function efgreedy{T<:Integer}(r::Rational{T})
-  (rem, ef) = _prep(r)
+function efgreedy{T<:Integer}(r::Rational{T}, given::Array{T,1} = T[])
+  (rem, ef) = _prep(r, given)
   while rem != 0
     rem = _greedyloop!(ef, rem)
   end
@@ -65,9 +69,9 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 
 is always true.
 """
-function efoddgreedy{T<:Integer}(r::Rational{T})
-  @assert isodd(den(r))
-  (rem, ef) = _prep(r)
+function efoddgreedy{T<:Integer}(r::Rational{T}, given::Array{T,1} = T[])
+  (rem, ef) = _prep(r, given)
+  @assert isodd(den(rem))
   while rem != 0
     rem = _oddgreedyloop!(ef, rem)
   end
@@ -92,9 +96,9 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 
 is always true.
 """
-function efharmonic{T<:Integer}(r::Rational{T}, first::Integer = 2)
+function efharmonic{T<:Integer}(r::Rational{T}, first::Integer = 2, given::Array{T,1} = T[])
   @assert first ≥ 2
-  (rem, ef) = _prep(r)
+  (rem, ef) = _prep(r, given)
   sum = Rational{BigInt}(0)
   i = BigInt(first)
   while sum ≤ rem
@@ -133,8 +137,8 @@ This function returns only the denominators of the expansion (i.e., only `[a, a*
 
 is always true.
 """
-function efengel{T<:Integer}(r::Rational{T})
-  (rem, ef) = _prep(r)
+function efengel{T<:Integer}(r::Rational{T}, given::Array{T, 1} = T[])
+  (rem, ef) = _prep(r, given)
   while rem != 0
     rem = _engelloop!(ef, rem)
   end
