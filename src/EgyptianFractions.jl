@@ -2,15 +2,15 @@ __precompile__()
 
 module EgyptianFractions
 
-export efgreedy, efoddgreedy, efharmonic, efengel
+export efgreedy, efoddgreedy, efharmonic, engelexpand, efengel
 
-function _prep{T<:Integer}(r::Rational{T}, given::Array{T,1})
-  s = sum(1 .// given)
-  @assert s ≤ r
+function _prep{T<:Integer}(r::Rational{T})
+  # This doesn't matter--just switch to negatives if this condition is not met.
+  #@assert(s ≤ r, "sum of given factors ($s) > target ($r)")
   rem = abs(BigInt(num(r))//BigInt(den(r)))
-  rem -= s
   ef = BigInt[]
-  append!(ef, given)
+  # Later...
+  #append!(ef, given)
   if abs(rem) ≥ 1
     f = floor(rem)
     rem -= f
@@ -35,12 +35,15 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 is always true.
 """
 function efgreedy{T<:Integer}(r::Rational{T}, given::Array{T,1} = T[])
-  (rem, ef) = _prep(r, given)
+  (rem, ef) = _prep(r - sum(1 .// given))
   while rem != 0
     rem = _greedyloop!(ef, rem)
   end
   if r < 0
     ef .*= -1
+  end
+  if !isempty(given)
+    unshift!(ef, given...)
   end
   return ef
 end
@@ -70,13 +73,16 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 is always true.
 """
 function efoddgreedy{T<:Integer}(r::Rational{T}, given::Array{T,1} = T[])
-  (rem, ef) = _prep(r, given)
+  (rem, ef) = _prep(r - sum(1 .// given))
   @assert isodd(den(rem))
   while rem != 0
     rem = _oddgreedyloop!(ef, rem)
   end
   if r < 0
     ef .*= -1
+  end
+  if !isempty(given)
+    unshift!(ef, given...)
   end
   return ef
 end
@@ -98,21 +104,48 @@ is always true.
 """
 function efharmonic{T<:Integer}(r::Rational{T}, first::Integer = 2, given::Array{T,1} = T[])
   @assert first ≥ 2
-  (rem, ef) = _prep(r, given)
-  sum = Rational{BigInt}(0)
+  (rem, ef) = _prep(r - sum(1 .// given))
+  s = Rational{BigInt}(0)
   i = BigInt(first)
-  while sum ≤ rem
+  while s ≤ rem
     hh = 1//i
-    if sum + hh > rem
+    if s + hh > rem
       break
     end
     push!(ef, i)
-    sum += hh
+    s += hh
     i += 1
   end
-  rem -= sum
+  rem -= s
   while rem != 0
     rem = _greedyloop!(ef, rem)
+  end
+  if r < 0
+    ef .*= -1
+  end
+  if !isempty(given)
+    unshift!(ef, given...)
+  end
+  return ef
+end
+
+efharmonic(r::Real, first::Integer = 2) = efharmonic(Rational{BigInt}(r), first, BigInt[])
+
+function _engelloop!(ef::Vector{BigInt}, r::Rational{BigInt})
+  c = ceil(1//r)
+  push!(ef, c)
+  return r * c - 1
+end
+
+"""
+Performs an Engel expansion of the given rational number into a sum of fractions of the form `1/a + 1/(a*b) + 1/(a*b*c)...`.
+
+This function returns only the unique denominators of the expansion (i.e., only `[a, b, ...]`).  If the given rational number `r` satisfies `r ≥ 1`, the first `n` elements of the expansion will be 1, where `n = floor(r)`.
+"""
+function engelexpand{T<:Integer}(r::Rational{T})
+  (rem, ef) = _prep(r)
+  while rem != 0
+    rem = _engelloop!(ef, rem)
   end
   if r < 0
     ef .*= -1
@@ -120,13 +153,7 @@ function efharmonic{T<:Integer}(r::Rational{T}, first::Integer = 2, given::Array
   return ef
 end
 
-efharmonic(r::Real, first::Integer = 2) = efharmonic(Rational{BigInt}(r), first)
-
-function _engelloop!(ef::Vector{BigInt}, r::Rational{BigInt})
-  c = ceil(1//r)
-  push!(ef, c)
-  return r * c - 1
-end
+engelexpand(r::Real) = engelexpand(Rational{BigInt}(r))
 
 """
 Performs an Engel expansion of the given rational number into a sum of fractions of the form `1/a + 1/(a*b) + 1/(a*b*c)...`.
@@ -138,12 +165,13 @@ This function returns only the denominators of the expansion (i.e., only `[a, a*
 is always true.
 """
 function efengel{T<:Integer}(r::Rational{T}, given::Array{T, 1} = T[])
-  (rem, ef) = _prep(r, given)
-  while rem != 0
-    rem = _engelloop!(ef, rem)
-  end
+  ef = engelexpand(r - sum(1 .// given))
+  cumprod!(ef, ef)
   if r < 0
     ef .*= -1
+  end
+  if !isempty(given)
+    unshift!(ef, given...)
   end
   return ef
 end
