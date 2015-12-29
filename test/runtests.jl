@@ -72,20 +72,239 @@ let og = efoddgreedy(3//179)
   #@test_approx_eq_eps(og[end], 1.415e439491, 1e-2)
 end
 
+# Greedy expansions from OEIS
+let e = efgreedy(π-3)
+  # A001466
+  # Numbers get too big, errors compound
+  @test e[1:3] == [8, 61, 5020, #=128541455=#]
+  @test_approx_eq_eps(sum(1 .// e[4:end]), 1//128541455, 1e-12)
+end
+
+let e = efgreedy(sqrt(2))
+  # A006487
+  # Numbers get too big, errors compound
+  @test e[1:5] == [1, 3, 13, 253, 218201, #=61323543802=#]
+  @test_approx_eq_eps(sum(1 .// e[6:end]), 1//61323543802, 1e-12)
+end
+
+let e = efgreedy(1/π)
+  # A006524
+  # Numbers get too big, errors compound
+  @test e[1:4] == [4, 15, 609, 845029, #=1010073215739=#]
+  @test_approx_eq_eps(sum(1 .// e[5:end]), 1//1010073215739, 1e-12)
+end
+
+let e = efgreedy(eu - 2)
+  # A006525
+  # Numbers get too big, errors compound
+  @test e[1:4] == [2, 5, 55, 9999, #=3620211523=#]
+  @test_approx_eq_eps(sum(1 .// e[5:end]), 1//3620211523, 1e-12)
+end
+
+let e = efgreedy(exp(-1))
+  # A006526
+  # Numbers get too big, errors compound
+  @test e[1:3] == [3, 29, 15786, #=513429610, 339840390654894740=#]
+  @test_approx_eq_eps(sum(1 .// e[4:end]), 1//513429610, 1e-12)
+end
+
 # Engel expansions are a little different.
 # From https://en.wikipedia.org/wiki/Engel_expansion
 @test engelexpand(1175//1000) == [1, 6, 20]
 @test efengel(1175//1000) == cumprod([1, 6, 20])
 
 # Engel expansions for some well-known constants
-let enpi = engelexpand(π)
-  @test enpi[1:9] == [1, 1, 1, 8, 8, 17, 19, 300, 1991]
+let e = engelexpand(π)
+  # A006784
+  @test e[1:9] == [1, 1, 1, 8, 8, 17, 19, 300, 1991]
 end
 
-let ensqrt2 = engelexpand(sqrt(2))
-  @test ensqrt2[1:9] == [1, 3, 5, 5, 16, 18, 78, 102, 120]
+let e = engelexpand(1/π)
+  # A014012
+  # Numbers get too big, errors compound
+  @test e[1:6] == [4, 4, 11, 45, 70, 1111, #=4423, 5478, 49340=#]
 end
 
-let ene = engelexpand(exp(1))
-  @test ene[1:9] == [1, 1, 2, 3, 4, 5, 6, 7, 8]
+let e = engelexpand(sqrt(2))
+  # A028254
+  @test e[1:9] == [1, 3, 5, 5, 16, 18, 78, 102, 120]
+end
+
+let e = engelexpand(sqrt(3))
+  # A028257
+  @test e[1:9] == [1, 2, 3, 3, 6, 17, 23, 25, 27]
+end
+
+let e = engelexpand(sqrt(5))
+  # A059176
+  @test e[1:9] == [1, 1, 5, 6, 13, 16, 16, 38, 48]
+end
+
+let e = engelexpand(sqrt(10))
+  # A059177
+  @test e[1:9] == [1, 1, 1, 7, 8, 12, 20, 86, 94]
+end
+
+let e = engelexpand(golden)
+  # A028259
+  @test e[1:9] == [1, 2, 5, 6, 13, 16, 16, 38, 48]
+end
+
+let e = engelexpand(eulergamma)
+  # A059177
+  # Numbers get too big, errors compound
+  @test e[1:7] == [2, 7, 13, 19, 85, 2601, 9602, #=46268, 4812284=#]
+end
+
+let e = engelexpand(2^(1/3))
+  # A059178
+  # Numbers get too big, errors compound
+  @test e[1:7] == [1, 4, 26, 32, 58, 1361, 4767, #=22303, 134563=#]
+end
+
+let e = engelexpand(3^(1/3))
+  # A059179
+  @test e[1:9] == [1, 3, 4, 4, 5, 8, 9, 14, 63]
+end
+
+let e = engelexpand(log(2))
+  # A059180
+  # Numbers get too big, errors compound
+  @test e[1:7] == [2, 3, 7, 9, 104, 510, 1413, #=2386, 40447=#]
+end
+
+let e = engelexpand(log(3))
+  # A059181
+  # Numbers get too big, errors compound
+  @test e[1:7] == [1, 11, 12, 60, 108, 139, 176, #=1228, 1356=#]
+end
+
+let e = engelexpand(log(10))
+  # A059182
+  @test e[1:9] == [1, 1, 4, 5, 20, 30, 48, 74, 265]
+end
+
+let e = engelexpand(1/log(2))
+  # A059183
+  @test e[1:9] == [1, 3, 4, 4, 5, 5, 5, 6, 47]
+end
+
+let e = engelexpand(1/log(10))
+  # A059184
+  # Numbers get too big, errors compound
+  @test e[1:8] == [3, 4, 5, 18, 27, 37, 415, 445, #=1812=#]
+end
+
+let e = engelexpand(π^2)
+  # A059185
+  # Expansion gets too small, errors compound
+  @test e[1:20] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 5, 9, 28, 45, 72, 111, #=329, 415, 846, 1488=#]
+end
+
+let e = engelexpand(zeta(2))
+  # A059186
+  # Numbers get too big, errors compound
+  @test e[1:8] == [1, 2, 4, 7, 9, 22, 35, 79, #=2992=#]
+end
+
+let e = engelexpand(exp(π))
+  # A059196
+  # Expansion gets too small, errors compound
+  @test e[1:28] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8, 8, 232, 238, 428, #=1103=#]
+end
+
+let e = engelexpand(π^(eu))
+  # A059197
+  # Expansion gets too small, errors compound
+  @test e[1:29] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 8, 17, 111, 236, 419, #=2475=#]
+end
+
+let e = engelexpand(exp(eulergamma))
+  # A059199
+  @test e[1:9] == [1, 2, 2, 9, 9, 15, 84, 256, 278]
+end
+
+let e = engelexpand(-log(log(2)))
+  # A059200
+  # Numbers get too big, errors compound
+  @test e[1:8] == [3, 11, 11, 23, 62, 66, 466, 1450, #=7617=#]
+end
+
+let e = engelexpand(catalan)
+  # A054543
+  @test e[1:9] == [2, 2, 2, 4, 4, 5, 5, 12, 13]
+end
+
+const khintchine = BigFloat(2.685452001065306445309714835481795693820382293994462953051152345557218)
+let e = engelexpand(khintchine)
+  # A054544
+  @test e[1:9] == [1, 1, 2, 3, 9, 70, 117, 503, 648]
+end
+
+let e = engelexpand(sqrt(π))
+  # A059187
+  # Numbers get too big, errors compound
+  @test e[1:8] == [1, 2, 2, 12, 13, 90, 121, 3457, #=7372=#]
+end
+
+let e = engelexpand(zeta(3))
+  # A053980
+  # Numbers get too big, errors compound
+  @test e[1:5] == [1, 5, 98, 127, 923, #=5474, 16490, 25355, 37910=#]
+end
+
+let e = engelexpand(gamma(1/3))
+  # A059188
+  # Numbers get too big, errors compound
+  @test e[1:8] == [1, 1, 2, 3, 14, 33, 57, 236, #=6280=#]
+end
+
+let e = engelexpand(gamma(2/3))
+  # A059189
+  # Numbers get too big, errors compound
+  @test e[1:7] == [1, 3, 17, 17, 50, 79, 796, #=3687, 7074=#]
+end
+
+let e = engelexpand(eulergamma^2)
+  # A059190
+  @test e[1:9] == [4, 4, 4, 4, 4, 6, 23, 26, 126]
+end
+
+let e = engelexpand(1/eulergamma)
+  # A059191
+  @test e[1:9] == [1, 2, 3, 3, 6, 10, 20, 46, 226]
+end
+
+let e = engelexpand(log(1/eulergamma))
+  # A059192
+  # Numbers get too big, errors compound
+  @test e[1:7] == [2, 11, 12, 13, 53, 348, 5263, #=9960, 17040=#]
+end
+
+let e = engelexpand(exp(-1))
+  # A059193
+  # Expansion gets too small, errors compound
+  @test e[1:8] == [3, 10, 28, 54, 88, 130, 180, 238, #=304=#]
+end
+
+let e = engelexpand(exp(-2))
+  # A059194
+  # Expansion gets too small, errors compound
+  @test e[1:7] == [8, 13, 14, 21, 87, 92, 119, #=444, 472=#]
+end
+
+let e = engelexpand(log(π))
+  # A059195
+  # Numbers get too big, errors compound
+  @test e[1:6] == [1, 7, 77, 107, 150, 167, #=7091, 27852, 31790=#]
+end
+
+let e = engelexpand(eu)
+  # A028310
+  @test e[1:9] == [1, 1, 2, 3, 4, 5, 6, 7, 8]
+end
+
+let e = engelexpand(exp(1/2))
+  # A004277
+  @test e[1:9] == [1, 2, 4, 6, 8, 10, 12, 14, 16]
 end
