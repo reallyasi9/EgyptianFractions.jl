@@ -4,14 +4,11 @@ module EgyptianFractions
 
 export efgreedy, efoddgreedy, efharmonic, engelexpand, efengel
 
-function _prep{T<:Integer}(r::Rational{T})
-  # This doesn't matter--just switch to negatives if this condition is not met.
-  #@assert(s ≤ r, "sum of given factors ($s) > target ($r)")
-  rem = abs(BigInt(num(r))//BigInt(den(r)))
+function _prep(r::Rational)
+  @assert(den(r) != 0, "denominator must be > 0")
+  rem = abs(big(r))
   ef = BigInt[]
-  # Later...
-  #append!(ef, given)
-  if abs(rem) ≥ 1
+  if rem ≥ 1
     f = floor(rem)
     rem -= f
     append!(ef, collect(repeated(1, Int(f))))
@@ -34,21 +31,20 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 
 is always true.
 """
-function efgreedy{T<:Integer}(r::Rational{T}, given::Array{T,1} = T[])
-  (rem, ef) = _prep(r - sum(1 .// given))
-  while rem != 0
+function efgreedy(r::Rational; nmax::Int = typemax(Int))
+  (rem, ef) = _prep(r)
+  i = nmax
+  while rem != 0 && i > 0
     rem = _greedyloop!(ef, rem)
+    i -= 1
   end
   if r < 0
     ef .*= -1
   end
-  if !isempty(given)
-    unshift!(ef, given...)
-  end
   return ef
 end
 
-efgreedy(r::Real) = efgreedy(Rational{BigInt}(r))
+efgreedy(r::Real; nmax::Int = typemax(Int)) = efgreedy(Rational(big(r)), nmax=nmax)
 
 function _oddgreedyloop!(ef::Vector{BigInt}, r::Rational{BigInt})
   c = ceil(1//r)
@@ -72,22 +68,21 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 
 is always true.
 """
-function efoddgreedy{T<:Integer}(r::Rational{T}, given::Array{T,1} = T[])
-  (rem, ef) = _prep(r - sum(1 .// given))
-  @assert isodd(den(rem))
-  while rem != 0
+function efoddgreedy(r::Rational; nmax::Int = typemax(Int))
+  @assert isodd(den(r)) "denominator of rational ($(den(r))) must be odd"
+  (rem, ef) = _prep(r)
+  i = nmax
+  while rem != 0 && i > 0
     rem = _oddgreedyloop!(ef, rem)
+    i -= 1
   end
   if r < 0
     ef .*= -1
   end
-  if !isempty(given)
-    unshift!(ef, given...)
-  end
   return ef
 end
 
-efoddgreedy(r::Real) = efoddgreedy(Rational{BigInt}(r))
+efoddgreedy(r::Real; nmax::Int = typemax(Int)) = efoddgreedy(Rational(big(r)), nmax=nmax)
 
 """
 Performs a harmonic expansion of the given rational number into a sum of fractions of the form `1/2 + 1/3 + ...`, and concludes the remainder of the expansion using `efgreedy` if the given rational number cannot be represented as a sum in the harmonic sequence.
@@ -102,12 +97,13 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 
 is always true.
 """
-function efharmonic{T<:Integer}(r::Rational{T}, first::Integer = 2, given::Array{T,1} = T[])
-  @assert first ≥ 2
-  (rem, ef) = _prep(r - sum(1 .// given))
+function efharmonic(r::Rational, first::Int = 2; nmax::Int = typemax(Int))
+  @assert(first ≥ 2, "harmonic series must start at 2 or greater ($first given)")
+  (rem, ef) = _prep(r)
   s = Rational{BigInt}(0)
-  i = BigInt(first)
-  while s ≤ rem
+  i = big(first)
+  j = nmax
+  while s ≤ rem && j > 0
     hh = 1//i
     if s + hh > rem
       break
@@ -115,21 +111,20 @@ function efharmonic{T<:Integer}(r::Rational{T}, first::Integer = 2, given::Array
     push!(ef, i)
     s += hh
     i += 1
+    j -= 1
   end
   rem -= s
-  while rem != 0
+  while rem != 0 && j > 0
     rem = _greedyloop!(ef, rem)
+    j -= 1
   end
   if r < 0
     ef .*= -1
   end
-  if !isempty(given)
-    unshift!(ef, given...)
-  end
   return ef
 end
 
-efharmonic(r::Real, first::Integer = 2) = efharmonic(Rational{BigInt}(r), first, BigInt[])
+efharmonic(r::Real, first::Int = 2; nmax::Int = typemax(Int)) = efharmonic(Rational(big(r)), first, nmax=nmax)
 
 function _engelloop!(ef::Vector{BigInt}, r::Rational{BigInt})
   c = ceil(1//r)
@@ -142,18 +137,22 @@ Performs an Engel expansion of the given rational number into a sum of fractions
 
 This function returns only the unique denominators of the expansion (i.e., only `[a, b, ...]`).  If the given rational number `r` satisfies `r ≥ 1`, the first `n` elements of the expansion will be 1, where `n = floor(r)`.
 """
-function engelexpand{T<:Integer}(r::Rational{T})
+function engelexpand(r::Rational; nmax::Int = typemax(Int))
   (rem, ef) = _prep(r)
-  while rem != 0
+  i = nmax
+  while rem != 0 && i > 0
     rem = _engelloop!(ef, rem)
+    i -= 1
   end
-  if r < 0
-    ef .*= -1
+  # Convention:  the Engle expansion of a negative number will have ef[1] < 0.
+  # This way, all elements of cumprod(ef) will be negative.
+  if !isempty(ef) && r < 0
+    ef[1] *= -1
   end
   return ef
 end
 
-engelexpand(r::Real) = engelexpand(Rational{BigInt}(r))
+engelexpand(r::Real; nmax::Int = typemax(Int)) = engelexpand(Rational(big(r)), nmax=nmax)
 
 """
 Performs an Engel expansion of the given rational number into a sum of fractions of the form `1/a + 1/(a*b) + 1/(a*b*c)...`.
@@ -164,18 +163,12 @@ This function returns only the denominators of the expansion (i.e., only `[a, a*
 
 is always true.
 """
-function efengel{T<:Integer}(r::Rational{T}, given::Array{T, 1} = T[])
-  ef = engelexpand(r - sum(1 .// given))
+function efengel(r::Rational; nmax::Int = typemax(Int))
+  ef = engelexpand(r, nmax=nmax)
   cumprod!(ef, ef)
-  if r < 0
-    ef .*= -1
-  end
-  if !isempty(given)
-    unshift!(ef, given...)
-  end
   return ef
 end
 
-efengel(r::Real) = efengel(Rational{BigInt}(r))
+efengel(r::Real; nmax::Int = typemax(Int)) = efengel(Rational(big(r)), nmax=nmax)
 
 end # module

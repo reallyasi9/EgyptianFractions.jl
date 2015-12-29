@@ -1,34 +1,67 @@
 using EgyptianFractions
 using Base.Test
 
+# Simple edge cases are easiest
+@test efgreedy(0) == []
+@test efoddgreedy(0) == [] # works because Julia assumes Rational(0) == 0//1
+@test efharmonic(0) == []
+@test engelexpand(0) == []
+@test efengel(0) == []
+
+@test efgreedy(1) == [1]
+@test efoddgreedy(1) == [1]
+@test efharmonic(1) == [1] # harmonic series starts at 2
+@test engelexpand(1) == [1]
+@test efengel(1) == [1]
+
 # Random examples are my favorite!
 const seed = 7182818284 # first 10 digits of e after the decimal
 const rng = MersenneTwister(seed)
 
-const r32 = rand(rng, Int32, 100, 2)
+const r8 = rand(rng, Int8, 100, 2)
 
-for i in 1:size(r32, 1)
-  n = r32[i, 1]
-  d = r32[i, 2]
+for i in 1:size(r8, 1)
+  n = Int(r8[i, 1])
+  d = Int(r8[i, 2])
+  d = (d == 0) ? 1 : d
+
+  # Simple
+  @test efgreedy(1//d) == [d]
+
   efg = efgreedy(n//d)
   @test sum(1.//efg) == n//d
 end
 
-for i in 1:size(r32, 1)
-  n = r32[i, 1]
-  d = r32[i, 2]
+for i in 1:size(r8, 1)
+  n = Int(r8[i, 1])
+  d = Int(r8[i, 2])
   if !isodd(d)
     d += 1
   end
+
+  # Simple
+  @test efoddgreedy(1//d) == [d]
+
   efog = efoddgreedy(n//d)
   @test sum(1.//efog) == n//d
 end
 
-for i in 1:size(r32, 1)
-  n = r32[i, 1]
-  d = r32[i, 2]
+for i in 1:size(r8, 1)
+  n = Int(r8[i, 1])
+  d = Int(r8[i, 2])
+  d = (d == 0) ? 1 : d
+
+  # Simple
+  @test efharmonic(1//d) == [d]
+
   efh = efharmonic(n//d)
   @test sum(1.//efh) == n//d
+
+  # Kick it up a notch!
+  for j = 3:10
+    efh = efharmonic(n//d, j)
+    @test sum(1.//efh) == n//d
+  end
 end
 
 # Engel expansions are problematic, because they get really large really fast.
@@ -50,12 +83,10 @@ end
 
 # Equally distributing objects
 @test efgreedy(5//8) == [2, 8]
-@test efgreedy(13//12) == [1, 12] # by definition, however
-@test efgreedy(13//12, [2, 3]) == [2, 3, 4]
+@test efgreedy(13//12) == [1, 12] # by definition, sadly
 
 # Later usage
 @test efgreedy(5//121) == [25, 757, 763309, 873960180913, 1527612795642093418846225]
-@test efgreedy(5//121, [33, 121]) == [33, 121, 363]
 
 # Examples from https://en.wikipedia.org/wiki/Odd_greedy_expansion
 
