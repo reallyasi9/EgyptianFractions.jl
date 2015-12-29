@@ -14,7 +14,7 @@ function _prep{T<:Integer}(r::Rational{T})
   if abs(rem) ≥ 1
     f = floor(rem)
     rem -= f
-    append!(ef, collect(repeated(1, Int64(f))))
+    append!(ef, collect(repeated(1, Int(f))))
   end
   return (rem, ef)
 end
