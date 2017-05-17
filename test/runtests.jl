@@ -1,5 +1,6 @@
 using EgyptianFractions
 using Base.Test
+using SpecialFunctions
 
 # Simple edge cases are easiest
 @test efgreedy(0) == []
@@ -241,7 +242,7 @@ let e = engelexpand(π^2)
   @test_approx_eq_eps(sum(1 .// e[21:end]), 1//329, 1e-2)
 end
 
-let e = engelexpand(zeta(2))
+let e = engelexpand(SpecialFunctions.zeta(2))
   # A059186
   # Numbers get too big, errors compound
   @test e[1:8] == [1, 2, 4, 7, 9, 22, 35, 79, #=2992=#]
@@ -293,7 +294,7 @@ let e = engelexpand(sqrt(π))
   @test_approx_eq_eps(sum(1 .// e[9:end]), 1//7372, 1e-3)
 end
 
-let e = engelexpand(zeta(3))
+let e = engelexpand(SpecialFunctions.zeta(3))
   # A053980
   # Numbers get too big, errors compound
   @test e[1:5] == [1, 5, 98, 127, 923, #=5474, 16490, 25355, 37910=#]
