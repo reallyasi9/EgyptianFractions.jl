@@ -2,10 +2,12 @@ __precompile__()
 
 module EgyptianFractions
 
+using Base.Iterators: repeated
+
 export efgreedy, efoddgreedy, efharmonic, engelexpand, efengel
 
 function _prep(r::Rational)
-  @assert(den(r) != 0, "denominator must be > 0")
+  @assert(denominator(r) != 0, "denominator must be > 0")
   rem = abs(big(r))
   ef = BigInt[]
   if rem ≥ 1
@@ -48,7 +50,7 @@ efgreedy(r::Real; nmax::Int = typemax(Int)) = efgreedy(Rational(big(r)), nmax=nm
 
 function _oddgreedyloop!(ef::Vector{BigInt}, r::Rational{BigInt})
   c = ceil(1//r)
-  if iseven(num(c))
+  if iseven(numerator(c))
     c += 1
   end
   push!(ef, c)
@@ -69,7 +71,7 @@ This function returns only the denominators of the expansion (i.e., only `[a_1, 
 is always true.
 """
 function efoddgreedy(r::Rational; nmax::Int = typemax(Int))
-  @assert isodd(den(r)) "denominator of rational ($(den(r))) must be odd"
+  @assert isodd(denominator(r)) "denominator of rational ($(denominator(r))) must be odd"
   (rem, ef) = _prep(r)
   i = nmax
   while rem != 0 && i > 0
