@@ -1,6 +1,8 @@
 using EgyptianFractions
-using Base.Test
+using Test
+using Random
 using SpecialFunctions
+using Base.MathConstants: golden, eulergamma, catalan
 
 # Simple edge cases are easiest
 @test efgreedy(0) == []
@@ -30,7 +32,7 @@ for i in 1:size(r8, 1)
   @test efgreedy(1//d) == [d]
 
   efg = efgreedy(n//d)
-  @test sum(1.//efg) == n//d
+  @test sum(1 .// efg) == n//d
 end
 
 for i in 1:size(r8, 1)
@@ -44,7 +46,7 @@ for i in 1:size(r8, 1)
   @test efoddgreedy(1//d) == [d]
 
   efog = efoddgreedy(n//d)
-  @test sum(1.//efog) == n//d
+  @test sum(1 .// efog) == n//d
 end
 
 for i in 1:size(r8, 1)
@@ -56,12 +58,12 @@ for i in 1:size(r8, 1)
   @test efharmonic(1//d) == [d]
 
   efh = efharmonic(n//d)
-  @test sum(1.//efh) == n//d
+  @test sum(1 .// efh) == n//d
 
   # Kick it up a notch!
   for j = 3:10
     efh = efharmonic(n//d, j)
-    @test sum(1.//efh) == n//d
+    @test sum(1 .// efh) == n//d
   end
 end
 
@@ -101,7 +103,7 @@ end
 let og = efoddgreedy(3//179)
   @test size(og, 1) == 19
   # Dag, yo!
-  #@test_approx_eq_eps(og[end], 1.415e439491, 1e-2)
+  #@test og[end] ≈ 1.415e439491 atol=1e-2
 end
 
 # Greedy expansions from OEIS
@@ -109,35 +111,35 @@ let e = efgreedy(π-3)
   # A001466
   # Numbers get too big, errors compound
   @test e[1:3] == [8, 61, 5020, #=128541455=#]
-  @test_approx_eq_eps(sum(1 .// e[4:end]), 1//128541455, 1e-8)
+  @test sum(1 .// e[4:end]) ≈ 1//128541455 atol=1e-8
 end
 
 let e = efgreedy(sqrt(2))
   # A006487
   # Numbers get too big, errors compound
   @test e[1:5] == [1, 3, 13, 253, 218201, #=61323543802=#]
-  @test_approx_eq_eps(sum(1 .// e[6:end]), 1//61323543802, 1e-10)
+  @test sum(1 .// e[6:end]) ≈ 1//61323543802 atol=1e-10
 end
 
 let e = efgreedy(1/π)
   # A006524
   # Numbers get too big, errors compound
   @test e[1:4] == [4, 15, 609, 845029, #=1010073215739=#]
-  @test_approx_eq_eps(sum(1 .// e[5:end]), 1//1010073215739, 1e-12)
+  @test sum(1 .// e[5:end]) ≈ 1//1010073215739 atol=1e-12
 end
 
-let e = efgreedy(eu - 2)
+let e = efgreedy(ℯ - 2)
   # A006525
   # Numbers get too big, errors compound
   @test e[1:4] == [2, 5, 55, 9999, #=3620211523=#]
-  @test_approx_eq_eps(sum(1 .// e[5:end]), 1//3620211523, 1e-9)
+  @test sum(1 .// e[5:end]) ≈ 1//3620211523 atol=1e-9
 end
 
 let e = efgreedy(exp(-1))
   # A006526
   # Numbers get too big, errors compound
   @test e[1:3] == [3, 29, 15786, #=513429610, 339840390654894740=#]
-  @test_approx_eq_eps(sum(1 .// e[4:end]), 1//513429610, 1e-8)
+  @test sum(1 .// e[4:end]) ≈ 1//513429610 atol=1e-8
 end
 
 # Engel expansions are a little different.
@@ -155,7 +157,7 @@ let e = engelexpand(1/π)
   # A014012
   # Numbers get too big, errors compound
   @test e[1:6] == [4, 4, 11, 45, 70, 1111, #=4423, 5478, 49340=#]
-  @test_approx_eq_eps(sum(1 .// e[7:end]), 1//4423, 1e-3)
+  @test sum(1 .// e[7:end]) ≈ 1//4423 atol=1e-3
 end
 
 let e = engelexpand(sqrt(2))
@@ -187,7 +189,7 @@ let e = engelexpand(eulergamma)
   # A059177
   # Numbers get too big, errors compound
   @test e[1:7] == [2, 7, 13, 19, 85, 2601, 9602, #=46268, 4812284=#]
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//46268, 1e-4)
+  @test sum(1 .// e[8:end]) ≈ 1//46268 atol=1e-4
 end
 
 let e = engelexpand(2^(1/3))
@@ -195,7 +197,7 @@ let e = engelexpand(2^(1/3))
   # Numbers get too big, errors compound
   @test e[1:7] == [1, 4, 26, 32, 58, 1361, 4767, #=22303, 134563=#]
   # Not great...
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//22303, 1e-3)
+  @test sum(1 .// e[8:end]) ≈ 1//22303 atol=1e-3
 end
 
 let e = engelexpand(3^(1/3))
@@ -207,14 +209,14 @@ let e = engelexpand(log(2))
   # A059180
   # Numbers get too big, errors compound
   @test e[1:7] == [2, 3, 7, 9, 104, 510, 1413, #=2386, 40447=#]
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//2386, 1e-3)
+  @test sum(1 .// e[8:end]) ≈ 1//2386 atol=1e-3
 end
 
 let e = engelexpand(log(3))
   # A059181
   # Numbers get too big, errors compound
   @test e[1:7] == [1, 11, 12, 60, 108, 139, 176, #=1228, 1356=#]
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//1228, 1e-3)
+  @test sum(1 .// e[8:end]) ≈ 1//1228 atol=1e-3
 end
 
 let e = engelexpand(log(10))
@@ -232,35 +234,35 @@ let e = engelexpand(1/log(10))
   # Numbers get too big, errors compound
   @test e[1:8] == [3, 4, 5, 18, 27, 37, 415, 445, #=1812=#]
   # Not great...
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//1812, 1e-2)
+  @test sum(1 .// e[8:end]) ≈ 1//1812 atol=1e-2
 end
 
 let e = engelexpand(π^2)
   # A059185
   # Expansion gets too small, errors compound
   @test e[1:20] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 5, 9, 28, 45, 72, 111, #=329, 415, 846, 1488=#]
-  @test_approx_eq_eps(sum(1 .// e[21:end]), 1//329, 1e-2)
+  @test sum(1 .// e[21:end]) ≈ 1//329 atol=1e-2
 end
 
 let e = engelexpand(SpecialFunctions.zeta(2))
   # A059186
   # Numbers get too big, errors compound
   @test e[1:8] == [1, 2, 4, 7, 9, 22, 35, 79, #=2992=#]
-  @test_approx_eq_eps(sum(1 .// e[9:end]), 1//2992, 1e-3)
+  @test sum(1 .// e[9:end]) ≈ 1//2992 atol=1e-3
 end
 
 let e = engelexpand(exp(π))
   # A059196
   # Expansion gets too small, errors compound
   @test e[1:28] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8, 8, 232, 238, 428, #=1103=#]
-  @test_approx_eq_eps(sum(1 .// e[29:end]), 1//1103, 1e-3)
+  @test sum(1 .// e[29:end]) ≈ 1//1103 atol=1e-3
 end
 
-let e = engelexpand(π^(eu))
+let e = engelexpand(π^(ℯ))
   # A059197
   # Expansion gets too small, errors compound
   @test e[1:29] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 8, 17, 111, 236, 419, #=2475=#]
-  @test_approx_eq_eps(sum(1 .// e[30:end]), 1//2475, 1e-3)
+  @test sum(1 .// e[30:end]) ≈ 1//2475 atol=1e-3
 end
 
 let e = engelexpand(exp(eulergamma))
@@ -273,7 +275,7 @@ let e = engelexpand(-log(log(2)))
   # Numbers get too big, errors compound
   @test e[1:8] == [3, 11, 11, 23, 62, 66, 466, 1450, #=7617=#]
   # Not great...
-  @test_approx_eq_eps(sum(1 .// e[9:end]), 1//7617, 1e-2)
+  @test sum(1 .// e[9:end]) ≈ 1//7617 atol=1e-2
 end
 
 let e = engelexpand(catalan)
@@ -291,28 +293,28 @@ let e = engelexpand(sqrt(π))
   # A059187
   # Numbers get too big, errors compound
   @test e[1:8] == [1, 2, 2, 12, 13, 90, 121, 3457, #=7372=#]
-  @test_approx_eq_eps(sum(1 .// e[9:end]), 1//7372, 1e-3)
+  @test sum(1 .// e[9:end]) ≈ 1//7372 atol=1e-3
 end
 
 let e = engelexpand(SpecialFunctions.zeta(3))
   # A053980
   # Numbers get too big, errors compound
   @test e[1:5] == [1, 5, 98, 127, 923, #=5474, 16490, 25355, 37910=#]
-  @test_approx_eq_eps(sum(1 .// e[6:end]), 1//5474, 1e-3)
+  @test sum(1 .// e[6:end]) ≈ 1//5474 atol=1e-3
 end
 
 let e = engelexpand(gamma(1/3))
   # A059188
   # Numbers get too big, errors compound
   @test e[1:8] == [1, 1, 2, 3, 14, 33, 57, 236, #=6280=#]
-  @test_approx_eq_eps(sum(1 .// e[9:end]), 1//6280, 1e-3)
+  @test sum(1 .// e[9:end]) ≈ 1//6280 atol=1e-3
 end
 
 let e = engelexpand(gamma(2/3))
   # A059189
   # Numbers get too big, errors compound
   @test e[1:7] == [1, 3, 17, 17, 50, 79, 796, #=3687, 7074=#]
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//3687, 1e-3)
+  @test sum(1 .// e[8:end]) ≈ 1//3687 atol=1e-3
 end
 
 let e = engelexpand(eulergamma^2)
@@ -329,31 +331,31 @@ let e = engelexpand(log(1/eulergamma))
   # A059192
   # Numbers get too big, errors compound
   @test e[1:7] == [2, 11, 12, 13, 53, 348, 5263, #=9960, 17040=#]
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//9960, 1e-3)
+  @test sum(1 .// e[8:end]) ≈ 1//9960 atol=1e-3
 end
 
 let e = engelexpand(exp(-1))
   # A059193
   # Expansion gets too small, errors compound
   @test e[1:8] == [3, 10, 28, 54, 88, 130, 180, 238, #=304=#]
-  @test_approx_eq_eps(sum(1 .// e[9:end]), 1//304, 1e-2)
+  @test sum(1 .// e[9:end]) ≈ 1//304 atol=1e-2
 end
 
 let e = engelexpand(exp(-2))
   # A059194
   # Expansion gets too small, errors compound
   @test e[1:7] == [8, 13, 14, 21, 87, 92, 119, #=444, 472=#]
-  @test_approx_eq_eps(sum(1 .// e[8:end]), 1//444, 1e-2)
+  @test sum(1 .// e[8:end]) ≈ 1//444 atol=1e-2
 end
 
 let e = engelexpand(log(π))
   # A059195
   # Numbers get too big, errors compound
   @test e[1:6] == [1, 7, 77, 107, 150, 167, #=7091, 27852, 31790=#]
-  @test_approx_eq_eps(sum(1 .// e[7:end]), 1//7091, 1e-3)
+  @test sum(1 .// e[7:end]) ≈ 1//7091 atol=1e-3
 end
 
-let e = engelexpand(eu)
+let e = engelexpand(ℯ)
   # A028310
   @test e[1:9] == [1, 1, 2, 3, 4, 5, 6, 7, 8]
 end

@@ -188,7 +188,7 @@ All of the exported functions in this package take an optional named argument `n
 ```julia
 efgreedy(π-3)          # A length-14 vector with the last element approximately 2.24e+9107
 efgreedy(π-3, nmax=4)  # [8, 61, 5020, 128541457]
-sum(1.//efgreedy(π-3)) - sum(1.//efgreedy(π-3, nmax=4))
+sum(1 .// efgreedy(π-3)) - sum(1 .// efgreedy(π-3, nmax=4))
                        # Approximately 4.72e-18.  Not bad!
 ```
 
