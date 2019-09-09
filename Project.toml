@@ -1,0 +1,4 @@
+name = "EgyptianFractions"
+uuid = "4224da6c-563c-4fdd-994e-fbbe44baf4b9"
+authors = ["Phil Killewald <phil@killewald.net>"]
+version = "0.2.0"
