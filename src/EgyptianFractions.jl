@@ -173,4 +173,6 @@ end
 
 efengel(r::Real; nmax::Int = typemax(Int)) = efengel(Rational(big(r)), nmax=nmax)
 
+include("EF_Optim.jl")
+
 end # module
