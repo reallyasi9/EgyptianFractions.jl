@@ -364,3 +364,7 @@ let e = engelexpand(exp(1/2))
   # A004277
   @test e[1:9] == [1, 2, 4, 6, 8, 10, 12, 14, 16]
 end
+
+let e = efoptimal(3//7,30)
+  @test sum(1//d for d in e) == 3//7
+end
